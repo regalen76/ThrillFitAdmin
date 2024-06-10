@@ -15,6 +15,16 @@
   <UModals />
 </template>
 
+<script setup lang="ts">
+useHead({
+  script: [
+    {
+      src: "http://localhost:8098",
+    },
+  ],
+});
+</script>
+
 <style>
 .page-enter-active,
 .page-leave-active {
