@@ -31,7 +31,33 @@
             </UPopover>
 
             <UModal v-model="isOpenCreateDocModal">
-              <div class="p-4">create</div>
+              <div class="p-4">
+                <UForm
+                  :schema="createGoalTypeSchema"
+                  :state="createGoalTypeState"
+                  class="space-y-4"
+                  @submit="onUploadGoalType"
+                >
+                  <UFormGroup label="Goal Type Name" name="goalTypeName">
+                    <UInput v-model="createGoalTypeState.goalTypeName" />
+                  </UFormGroup>
+                  <UFormGroup label="Goal Type Image" name="goalTypeImage">
+                    <UInput
+                      ref="imageUploadGoalType"
+                      v-model="createGoalTypeState.goalTypeImage"
+                      type="file"
+                      size="md"
+                      icon="i-heroicons-folder"
+                      accept="image/*"
+                    />
+                  </UFormGroup>
+                  <UFormGroup label="Image Name" name="imageName">
+                    <UInput v-model="createGoalTypeState.imageName" />
+                  </UFormGroup>
+
+                  <UButton type="submit"> Upload Goal Type </UButton>
+                </UForm>
+              </div>
             </UModal>
           </div>
           <div class="flex items-center ml-auto mr-4">
@@ -151,7 +177,23 @@
             </UPopover>
 
             <UModal v-model="isOpenCreateDocModal2">
-              <div class="p-4">create</div>
+              <div class="p-4">
+                <UForm
+                  :schema="createTrainingSetSchema"
+                  :state="createTrainingSetState"
+                  class="space-y-4"
+                  @submit="onUploadTrainingSet"
+                >
+                  <UFormGroup label="Goal Type Id" name="goalTypeId">
+                    <UInput v-model="createTrainingSetState.goalTypeId" />
+                  </UFormGroup>
+                  <UFormGroup label="Training Set Name" name="trainingSetName">
+                    <UInput v-model="createTrainingSetState.trainingSetName" />
+                  </UFormGroup>
+
+                  <UButton type="submit"> Upload Goal Type </UButton>
+                </UForm>
+              </div>
             </UModal>
           </div>
           <div class="flex items-center ml-auto mr-4">
@@ -246,7 +288,7 @@
           <div class="flex px-3 py-3.5 dark:border-gray-700">
             <UInput
               v-model="movementNameInput"
-              placeholder="Filter training set name..."
+              placeholder="Filter movement name..."
             />
           </div>
           <div class="flex items-center ml-2">
@@ -271,7 +313,36 @@
             </UPopover>
 
             <UModal v-model="isOpenCreateDocModal3">
-              <div class="p-4">create</div>
+              <div class="p-4">
+                <UForm
+                  :schema="createWorkoutMoveSchema"
+                  :state="createWorkoutMoveState"
+                  class="space-y-4"
+                  @submit="onUploadWorkoutMove"
+                >
+                  <UFormGroup label="Movement 3D File" name="movementFile">
+                    <UInput
+                      ref="upload3dWorkoutMove"
+                      v-model="createWorkoutMoveState.file3d"
+                      type="file"
+                      size="md"
+                      icon="i-heroicons-folder"
+                      accept=".glb"
+                    />
+                  </UFormGroup>
+                  <UFormGroup label="3d File Name" name="file3dName">
+                    <UInput v-model="createWorkoutMoveState.file3dName" />
+                  </UFormGroup>
+                  <UFormGroup label="Movement Name" name="movementName">
+                    <UInput v-model="createWorkoutMoveState.movementName" />
+                  </UFormGroup>
+                  <UFormGroup label="Training Set Id" name="trainingSetId">
+                    <UInput v-model="createWorkoutMoveState.trainingSetId" />
+                  </UFormGroup>
+
+                  <UButton type="submit"> Upload Workout Move </UButton>
+                </UForm>
+              </div>
             </UModal>
           </div>
           <div class="flex items-center ml-auto mr-4">
@@ -314,19 +385,6 @@
                   <div class="p-4 w-[50rem]">
                     <p class="text-center" style="white-space: initial">
                       {{ row.id }}
-                    </p>
-                  </div>
-                </template>
-              </UPopover>
-            </template>
-            <template #movement_count-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
-                <span>{{ row.movement_count }}</span>
-
-                <template #panel>
-                  <div class="p-4 w-[50rem]">
-                    <p class="text-center" style="white-space: initial">
-                      {{ row.movement_count }}
                     </p>
                   </div>
                 </template>
@@ -391,6 +449,8 @@
 </template>
 
 <script lang="ts" setup>
+import { object, string, mixed, type InferType } from "yup";
+import type { FormSubmitEvent } from "#ui/types";
 import {
   collection,
   query,
@@ -479,10 +539,6 @@ const columns3 = [
     label: "ID",
   },
   {
-    key: "movement_count",
-    label: "Movement Count",
-  },
-  {
     key: "movement_image",
     label: "Movement Image",
   },
@@ -543,7 +599,9 @@ const tableAction = (row: any) => [
     {
       label: "Delete",
       icon: "i-heroicons-trash-20-solid",
-      click: () => {},
+      click: () => {
+        deleteGoalType(row);
+      },
     },
   ],
 ];
@@ -552,7 +610,9 @@ const tableAction2 = (row: any) => [
     {
       label: "Delete",
       icon: "i-heroicons-trash-20-solid",
-      click: () => {},
+      click: () => {
+        deleteTrainingSet(row);
+      },
     },
   ],
 ];
@@ -561,10 +621,263 @@ const tableAction3 = (row: any) => [
     {
       label: "Delete",
       icon: "i-heroicons-trash-20-solid",
-      click: () => {},
+      click: () => {
+        deleteWorkoutMove(row);
+      },
     },
   ],
 ];
+
+const imageUploadGoalType = ref<any>(null);
+const createGoalTypeSchema = object().shape({
+  goalTypeName: string().required("Goal Type Name is required"),
+  goalTypeImage: mixed().required("Image File is required"),
+  imageName: string().required("Image Name is required"),
+});
+type CreateGoalTypeSchema = InferType<typeof createGoalTypeSchema>;
+const createGoalTypeState = reactive({
+  goalTypeName: undefined,
+  goalTypeImage: undefined,
+  imageName: undefined,
+});
+async function onUploadGoalType(event: FormSubmitEvent<CreateGoalTypeSchema>) {
+  useLoadingIndicator().start();
+  const imageFile: File = imageUploadGoalType.value.input.files[0];
+  let imagePathDoc: string = "";
+
+  toast.add({
+    title: "Uploading Images",
+  });
+  const imagePath = event.data.imageName + "." + imageFile.type.split("/")[1];
+  imagePathDoc = imagePath;
+
+  const { upload } = useStorageFile(
+    storageRef(storage, "goal-types/" + imagePath)
+  );
+  try {
+    await upload(imageFile);
+  } catch (e: any) {
+    toast.add({
+      title: "Error",
+      description: e.message,
+    });
+    return;
+  }
+  toast.add({
+    title: "Finished Uploading Images, Next Creating Goal Type Doc",
+  });
+
+  const goalTypeRef = doc(db, "goal_types", uuidV4());
+  try {
+    await setDoc(goalTypeRef, {
+      goal_type_image: imagePathDoc,
+      goal_type_name: event.data.goalTypeName,
+    });
+  } catch (e: any) {
+    toast.add({
+      title: "Error",
+      description: e.message,
+    });
+  }
+  toast.add({
+    title: "Finished Creating Goal Type",
+  });
+  isOpenCreateDocModal.value = false;
+  useLoadingIndicator().finish();
+}
+
+async function deleteGoalType(row: any) {
+  useLoadingIndicator().start();
+  //delete the images
+  toast.add({
+    title: "Deleting Image",
+  });
+  const feedsRef = storageRef(storage, `goal-types/${row.goal_type_image}`);
+  try {
+    await deleteObject(feedsRef);
+  } catch (e: any) {
+    toast.add({
+      title: `Error deleting image: ${row.goal_type_image}`,
+      description: e.message,
+    });
+    return;
+  }
+  toast.add({
+    title: "Finished Deleting Image, Next Deleting Goal Type Doc",
+  });
+
+  //delete likes
+  try {
+    await deleteDoc(doc(db, "goal_types", row.id));
+  } catch (e: any) {
+    toast.add({
+      title: "Error deleting goal type doc",
+      description: e.message,
+    });
+    return;
+  }
+  toast.add({
+    title: "Finished Deleting " + row.id + " goal type doc",
+  });
+
+  useLoadingIndicator().finish();
+}
+
+const createTrainingSetSchema = object().shape({
+  goalTypeId: string().required("Goal Type Id is required"),
+  trainingSetName: string().required("Training Set Name is required"),
+});
+type CreateTrainingSetSchema = InferType<typeof createTrainingSetSchema>;
+const createTrainingSetState = reactive({
+  goalTypeId: undefined,
+  trainingSetName: undefined,
+});
+async function onUploadTrainingSet(
+  event: FormSubmitEvent<CreateTrainingSetSchema>
+) {
+  useLoadingIndicator().start();
+
+  toast.add({
+    title: "Creating Training Set",
+  });
+  const trainingSetRef = doc(db, "training_sets", uuidV4());
+  try {
+    await setDoc(trainingSetRef, {
+      goal_type_id: event.data.goalTypeId,
+      training_set_name: event.data.trainingSetName,
+    });
+  } catch (e: any) {
+    toast.add({
+      title: "Error",
+      description: e.message,
+    });
+  }
+  toast.add({
+    title: "Finished Creating Training Set",
+  });
+  isOpenCreateDocModal2.value = false;
+  useLoadingIndicator().finish();
+}
+
+async function deleteTrainingSet(row: any) {
+  useLoadingIndicator().start();
+
+  try {
+    await deleteDoc(doc(db, "training_sets", row.id));
+  } catch (e: any) {
+    toast.add({
+      title: "Error deleting training set",
+      description: e.message,
+    });
+    return;
+  }
+  toast.add({
+    title: "Finished Deleting " + row.id + " training set",
+  });
+
+  useLoadingIndicator().finish();
+}
+
+const upload3dWorkoutMove = ref<any>(null);
+const createWorkoutMoveSchema = object().shape({
+  file3d: string().required("3d File is required"),
+  file3dName: string().required("3d File Name is required"),
+  movementName: mixed().required("Movement Name is required"),
+  trainingSetId: string().required("Training Set Id is required"),
+});
+type CreateWorkoutMoveSchema = InferType<typeof createWorkoutMoveSchema>;
+const createWorkoutMoveState = reactive({
+  file3d: undefined,
+  file3dName: undefined,
+  movementName: undefined,
+  trainingSetId: undefined,
+});
+
+async function onUploadWorkoutMove(
+  event: FormSubmitEvent<CreateWorkoutMoveSchema>
+) {
+  useLoadingIndicator().start();
+  const file3d: File = upload3dWorkoutMove.value.input.files[0];
+  let file3dPathDoc: string = "";
+
+  toast.add({
+    title: "Uploading 3d File",
+  });
+  const file3dPath = event.data.file3dName + ".glb";
+  file3dPathDoc = file3dPath;
+
+  const { upload } = useStorageFile(
+    storageRef(storage, "workout/" + file3dPath)
+  );
+  try {
+    await upload(file3d);
+  } catch (e: any) {
+    toast.add({
+      title: "Error",
+      description: e.message,
+    });
+    return;
+  }
+  toast.add({
+    title: "Finished Uploading 3d File, Next Creating Workout Movement Doc",
+  });
+
+  const goalTypeRef = doc(db, "training_set_movements", uuidV4());
+  try {
+    await setDoc(goalTypeRef, {
+      movement_image: file3dPathDoc,
+      movement_name: event.data.movementName,
+      training_set_id: event.data.trainingSetId,
+    });
+  } catch (e: any) {
+    toast.add({
+      title: "Error",
+      description: e.message,
+    });
+  }
+  toast.add({
+    title: "Finished Creating Workout Move",
+  });
+  isOpenCreateDocModal3.value = false;
+  useLoadingIndicator().finish();
+}
+
+async function deleteWorkoutMove(row: any) {
+  useLoadingIndicator().start();
+  //delete the 3d File
+  toast.add({
+    title: "Deleting 3d File",
+  });
+  const feedsRef = storageRef(storage, `workout/${row.movement_image}`);
+  try {
+    await deleteObject(feedsRef);
+  } catch (e: any) {
+    toast.add({
+      title: `Error deleting 3d file: ${row.goal_type_image}`,
+      description: e.message,
+    });
+    return;
+  }
+  toast.add({
+    title: "Finished Deleting 3d File, Next Deleting Workout Move Doc",
+  });
+
+  //delete likes
+  try {
+    await deleteDoc(doc(db, "training_set_movements", row.id));
+  } catch (e: any) {
+    toast.add({
+      title: "Error deleting workout move doc",
+      description: e.message,
+    });
+    return;
+  }
+  toast.add({
+    title: "Finished Deleting " + row.id + " workout move doc",
+  });
+
+  useLoadingIndicator().finish();
+}
 </script>
 
 <style></style>

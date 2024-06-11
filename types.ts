@@ -20,7 +20,6 @@ export type TrainingSets = {
 };
 
 export type TrainingSetMovements = {
-  movement_count: number;
   movement_image: string;
   movement_name: string;
   training_set_id: string;
