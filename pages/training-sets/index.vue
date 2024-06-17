@@ -472,6 +472,11 @@ import type {
 } from "~/types";
 import { deleteObject, ref as storageRef } from "firebase/storage";
 import { v4 as uuidV4 } from "uuid";
+import {
+  TrainingSetEditModal,
+  GoalTypeEditModal,
+  WorkoutMoveEditModal,
+} from "#components";
 
 definePageMeta({
   middleware: "auth",
@@ -492,6 +497,7 @@ const tabItems = [
     label: "Table Workout Move",
   },
 ];
+const modal = useModal();
 
 const contentEl = ref(null);
 const { width, height } = useElementSize(contentEl);
@@ -611,6 +617,18 @@ const tableAction = (row: any) => [
         deleteGoalType(row);
       },
     },
+    {
+      label: "Edit",
+      icon: "i-heroicons-pencil-square-20-solid",
+      click: () => {
+        modal.open(GoalTypeEditModal, {
+          goalTypeData: row,
+          onSuccess() {
+            modal.close();
+          },
+        });
+      },
+    },
   ],
 ];
 const tableAction2 = (row: any) => [
@@ -622,6 +640,18 @@ const tableAction2 = (row: any) => [
         deleteTrainingSet(row);
       },
     },
+    {
+      label: "Edit",
+      icon: "i-heroicons-pencil-square-20-solid",
+      click: () => {
+        modal.open(TrainingSetEditModal, {
+          trainingSetData: row,
+          onSuccess() {
+            modal.close();
+          },
+        });
+      },
+    },
   ],
 ];
 const tableAction3 = (row: any) => [
@@ -631,6 +661,18 @@ const tableAction3 = (row: any) => [
       icon: "i-heroicons-trash-20-solid",
       click: () => {
         deleteWorkoutMove(row);
+      },
+    },
+    {
+      label: "Edit",
+      icon: "i-heroicons-pencil-square-20-solid",
+      click: () => {
+        modal.open(WorkoutMoveEditModal, {
+          movementData: row,
+          onSuccess() {
+            modal.close();
+          },
+        });
       },
     },
   ],

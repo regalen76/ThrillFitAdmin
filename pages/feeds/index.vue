@@ -420,10 +420,7 @@ const feedsDataQuery = query(collection(db, "posts"));
 const { data: feeds, pending } = useCollection<Posts>(feedsDataQuery);
 
 const modal = useModal();
-const count = ref(0);
-
 function openEditModal(postData: Post) {
-  count.value += 1;
   modal.open(FeedEditModal, {
     postData: postData,
     onSuccess() {

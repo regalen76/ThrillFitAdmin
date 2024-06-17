@@ -5,17 +5,7 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { object, string, date as dated, type InferType } from "yup";
 import type { FormSubmitEvent } from "#ui/types";
-import {
-  collection,
-  query,
-  deleteDoc,
-  getDocs,
-  where,
-  doc,
-  setDoc,
-  updateDoc,
-  Timestamp,
-} from "firebase/firestore";
+import { doc, updateDoc, Timestamp } from "firebase/firestore";
 import { deleteObject, ref as storageRef } from "firebase/storage";
 import { v4 as uuidV4 } from "uuid";
 
