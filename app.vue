@@ -17,11 +17,13 @@
 
 <script setup lang="ts">
 useHead({
+  title: "Thrill Fit Admin",
   script: [
     {
       src: "http://localhost:8098",
     },
   ],
+  link: [{ rel: "icon", type: "image/png", href: "/favicon.ico" }],
 });
 </script>
 

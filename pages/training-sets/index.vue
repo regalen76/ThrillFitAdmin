@@ -461,7 +461,15 @@ import {
   setDoc,
   Timestamp,
 } from "firebase/firestore";
-import type { GoalTypes, TrainingSetMovements, TrainingSets } from "~/types";
+import type {
+  GoalTypes,
+  TrainingSetMovements,
+  TrainingSets,
+  GoalType,
+  TrainingSet,
+  TrainingSetMovement,
+  WorkoutPlanMovesets,
+} from "~/types";
 import { deleteObject, ref as storageRef } from "firebase/storage";
 import { v4 as uuidV4 } from "uuid";
 
@@ -661,6 +669,7 @@ async function onUploadGoalType(event: FormSubmitEvent<CreateGoalTypeSchema>) {
       title: "Error",
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   toast.add({
@@ -678,6 +687,8 @@ async function onUploadGoalType(event: FormSubmitEvent<CreateGoalTypeSchema>) {
       title: "Error",
       description: e.message,
     });
+    useLoadingIndicator().finish();
+    return;
   }
   toast.add({
     title: "Finished Creating Goal Type",
@@ -686,7 +697,7 @@ async function onUploadGoalType(event: FormSubmitEvent<CreateGoalTypeSchema>) {
   useLoadingIndicator().finish();
 }
 
-async function deleteGoalType(row: any) {
+async function deleteGoalType(row: GoalType) {
   useLoadingIndicator().start();
   //delete the images
   toast.add({
@@ -700,13 +711,13 @@ async function deleteGoalType(row: any) {
       title: `Error deleting image: ${row.goal_type_image}`,
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   toast.add({
     title: "Finished Deleting Image, Next Deleting Goal Type Doc",
   });
 
-  //delete likes
   try {
     await deleteDoc(doc(db, "goal_types", row.id));
   } catch (e: any) {
@@ -714,13 +725,19 @@ async function deleteGoalType(row: any) {
       title: "Error deleting goal type doc",
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   toast.add({
     title: "Finished Deleting " + row.id + " goal type doc",
   });
 
-  useLoadingIndicator().finish();
+  const temp: TrainingSet[] = trainingSets.value.filter(
+    (trainingSet) => (trainingSet.goal_type_id = row.id)
+  );
+  if (temp.length !== 0) {
+    deleteTrainingSetList(temp);
+  }
 }
 
 const createTrainingSetSchema = object().shape({
@@ -751,6 +768,8 @@ async function onUploadTrainingSet(
       title: "Error",
       description: e.message,
     });
+    useLoadingIndicator().finish();
+    return;
   }
   toast.add({
     title: "Finished Creating Training Set",
@@ -759,7 +778,7 @@ async function onUploadTrainingSet(
   useLoadingIndicator().finish();
 }
 
-async function deleteTrainingSet(row: any) {
+async function deleteTrainingSet(row: TrainingSet) {
   useLoadingIndicator().start();
 
   try {
@@ -769,13 +788,49 @@ async function deleteTrainingSet(row: any) {
       title: "Error deleting training set",
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   toast.add({
     title: "Finished Deleting " + row.id + " training set",
   });
 
-  useLoadingIndicator().finish();
+  const temp: TrainingSetMovement[] = traningSetMovements.value.filter(
+    (trainingSetMovement) => (trainingSetMovement.training_set_id = row.id)
+  );
+  if (temp.length !== 0) {
+    deleteWorkoutMoveList(temp);
+  }
+}
+
+async function deleteTrainingSetList(row: TrainingSet[]) {
+  if (row.length !== 0) {
+    for (const trainingSet of row) {
+      try {
+        await deleteDoc(doc(db, "training_sets", trainingSet.id));
+      } catch (e: any) {
+        toast.add({
+          title: "Error deleting training set",
+          description: e.message,
+        });
+        useLoadingIndicator().finish();
+        return;
+      }
+    }
+  }
+  toast.add({
+    title: "Finished Deleting training sets",
+  });
+
+  const temp: TrainingSetMovement[] = traningSetMovements.value.filter(
+    (trainingSetMovement) =>
+      row.some(
+        (trainingSet) => trainingSet.id === trainingSetMovement.training_set_id
+      )
+  );
+  if (temp.length !== 0) {
+    deleteWorkoutMoveList(temp);
+  }
 }
 
 const upload3dWorkoutMove = ref<any>(null);
@@ -816,6 +871,7 @@ async function onUploadWorkoutMove(
       title: "Error",
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   toast.add({
@@ -834,6 +890,8 @@ async function onUploadWorkoutMove(
       title: "Error",
       description: e.message,
     });
+    useLoadingIndicator().finish();
+    return;
   }
   toast.add({
     title: "Finished Creating Workout Move",
@@ -842,7 +900,7 @@ async function onUploadWorkoutMove(
   useLoadingIndicator().finish();
 }
 
-async function deleteWorkoutMove(row: any) {
+async function deleteWorkoutMove(row: TrainingSetMovement) {
   useLoadingIndicator().start();
   //delete the 3d File
   toast.add({
@@ -853,9 +911,10 @@ async function deleteWorkoutMove(row: any) {
     await deleteObject(feedsRef);
   } catch (e: any) {
     toast.add({
-      title: `Error deleting 3d file: ${row.goal_type_image}`,
+      title: `Error deleting 3d file: ${row.movement_image}`,
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   toast.add({
@@ -870,11 +929,119 @@ async function deleteWorkoutMove(row: any) {
       title: "Error deleting workout move doc",
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   toast.add({
     title: "Finished Deleting " + row.id + " workout move doc",
   });
+
+  const { promise } = useCollection<WorkoutPlanMovesets>(
+    query(
+      collection(db, "workout_plan_movesets"),
+      where("movement_id", "==", row.id)
+    ),
+    {
+      once: true,
+    }
+  );
+  promise.value.then(async (data) => {
+    for (const wpm of data) {
+      try {
+        await deleteDoc(doc(db, "workout_plan_movesets", wpm.id));
+      } catch (e: any) {
+        toast.add({
+          title: "Error deleting workout plan moveset doc",
+          description: e.message,
+        });
+        useLoadingIndicator().finish();
+        return;
+      }
+    }
+
+    toast.add({
+      title: "Finished Deleting workout plan moveset doc",
+    });
+  });
+
+  useLoadingIndicator().finish();
+}
+
+async function deleteWorkoutMoveList(row: TrainingSetMovement[]) {
+  if (row.length !== 0) {
+    //delete the 3d File
+    toast.add({
+      title: "Deleting 3d Files",
+    });
+    for (const trainingSetMovement of row) {
+      const feedsRef = storageRef(
+        storage,
+        `workout/${trainingSetMovement.movement_image}`
+      );
+      try {
+        await deleteObject(feedsRef);
+      } catch (e: any) {
+        toast.add({
+          title: `Error deleting 3d file: ${trainingSetMovement.movement_image}`,
+          description: e.message,
+        });
+        useLoadingIndicator().finish();
+        return;
+      }
+    }
+    toast.add({
+      title: "Finished Deleting 3d Files, Next Deleting Workout Move Docs",
+    });
+
+    for (const trainingSetMovement of row) {
+      try {
+        await deleteDoc(
+          doc(db, "training_set_movements", trainingSetMovement.id)
+        );
+      } catch (e: any) {
+        toast.add({
+          title: "Error deleting workout move doc",
+          description: e.message,
+        });
+        useLoadingIndicator().finish();
+        return;
+      }
+    }
+    toast.add({
+      title: "Finished Deleting workout move docs",
+    });
+
+    const idList: string[] = row.map(
+      (traningSetMovement) => traningSetMovement.id
+    );
+    const { promise } = useCollection<WorkoutPlanMovesets>(
+      query(
+        collection(db, "workout_plan_movesets"),
+        where("movement_id", "in", idList)
+      ),
+      {
+        once: true,
+      }
+    );
+    promise.value.then(async (data) => {
+      for (const wpm of data) {
+        try {
+          await deleteDoc(doc(db, "workout_plan_movesets", wpm.id));
+        } catch (e: any) {
+          toast.add({
+            title: "Error deleting workout plan moveset doc",
+            description: e.message,
+          });
+          useLoadingIndicator().finish();
+          return;
+        }
+      }
+
+      toast.add({
+        title: "Finished Deleting workout plan moveset doc",
+      });
+    });
+  }
 
   useLoadingIndicator().finish();
 }

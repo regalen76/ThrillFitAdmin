@@ -277,6 +277,8 @@ async function deleteFeeds(row: any) {
         title: `Error deleting image: ${id}`,
         description: e.message,
       });
+
+      useLoadingIndicator().finish();
       return;
     }
   }
@@ -301,6 +303,7 @@ async function deleteFeeds(row: any) {
       title: "Error deleting likes",
       description: error.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
 
@@ -322,6 +325,7 @@ async function deleteFeeds(row: any) {
       title: "Error deleting Comments",
       description: error.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
 
@@ -336,6 +340,7 @@ async function deleteFeeds(row: any) {
       title: "Error deleting Post",
       description: e.message,
     });
+    useLoadingIndicator().finish();
     return;
   }
   useLoadingIndicator().finish();
@@ -375,6 +380,7 @@ async function onUploadPost(event: FormSubmitEvent<CreatePostSchema>) {
         title: "Error",
         description: e.message,
       });
+      useLoadingIndicator().finish();
       return;
     }
   }
@@ -395,6 +401,8 @@ async function onUploadPost(event: FormSubmitEvent<CreatePostSchema>) {
       title: "Error",
       description: e.message,
     });
+    useLoadingIndicator().finish();
+    return;
   }
   toast.add({
     title: "Finished Creating Post Data",
