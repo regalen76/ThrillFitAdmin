@@ -14,4 +14,7 @@ export default defineNuxtConfig({
       measurementId: process.env.measurementId,
     },
   },
+  build: {
+    transpile: ['@vuepic/vue-datepicker']
+  }
 });

@@ -189,9 +189,10 @@ import {
   setDoc,
   Timestamp,
 } from "firebase/firestore";
-import type { Posts } from "~/types";
+import type { Posts, Post } from "~/types";
 import { deleteObject, ref as storageRef } from "firebase/storage";
 import { v4 as uuidV4 } from "uuid";
+import { FeedEditModal } from "#components";
 
 definePageMeta({
   middleware: "auth",
@@ -249,6 +250,13 @@ const tableAction = (row: any) => [
       icon: "i-heroicons-trash-20-solid",
       click: () => {
         deleteFeeds(row);
+      },
+    },
+    {
+      label: "Edit",
+      icon: "i-heroicons-pencil-square-20-solid",
+      click: () => {
+        openEditModal(row);
       },
     },
   ],
@@ -402,6 +410,19 @@ const toast = useToast();
 const feedsDataQuery = query(collection(db, "posts"));
 
 const { data: feeds, pending } = useCollection<Posts>(feedsDataQuery);
+
+const modal = useModal();
+const count = ref(0);
+
+function openEditModal(postData: Post) {
+  count.value += 1;
+  modal.open(FeedEditModal, {
+    postData: postData,
+    onSuccess() {
+      modal.close();
+    },
+  });
+}
 </script>
 
 <style></style>

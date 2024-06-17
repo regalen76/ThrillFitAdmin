@@ -9,6 +9,15 @@ export type Posts = {
   workout_plan: string | null;
 };
 
+export type Post = {
+  id: string;
+  author: string;
+  body: string;
+  content: string[];
+  timestamp: Timestamp;
+  workout_plan: string | null;
+};
+
 export type GoalTypes = {
   goal_type_image: string;
   goal_type_name: string;
