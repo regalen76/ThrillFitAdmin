@@ -98,10 +98,6 @@ const links = [
     to: "/feeds",
   },
   {
-    label: "Challenges",
-    to: "/challenges",
-  },
-  {
     label: "Training Sets",
     to: "/training-sets",
   },
