@@ -191,7 +191,7 @@
                     <UInput v-model="createTrainingSetState.trainingSetName" />
                   </UFormGroup>
 
-                  <UButton type="submit"> Upload Goal Type </UButton>
+                  <UButton type="submit"> Upload Training Set </UButton>
                 </UForm>
               </div>
             </UModal>
