@@ -175,7 +175,7 @@ async function deleteImage(path: string) {
                     {{ item.label }}
                   </p>
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Edit Goal Type Data
+                    Edit Workout Move Data
                   </p>
                 </template>
 
@@ -204,7 +204,7 @@ async function deleteImage(path: string) {
                   {{ item.label }}
                 </p>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Edit Goal Type Image
+                  Edit Workout Move Image
                 </p>
               </template>
 
