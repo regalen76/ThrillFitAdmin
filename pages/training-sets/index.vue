@@ -476,6 +476,7 @@ import {
   TrainingSetEditModal,
   GoalTypeEditModal,
   WorkoutMoveEditModal,
+  FeedDeleteModal,
 } from "#components";
 
 definePageMeta({
@@ -614,7 +615,13 @@ const tableAction = (row: any) => [
       label: "Delete",
       icon: "i-heroicons-trash-20-solid",
       click: () => {
-        deleteGoalType(row);
+        modal.open(FeedDeleteModal, {
+          postData: row,
+          type: 2,
+          onClosed() {
+            modal.close();
+          },
+        });
       },
     },
     {
@@ -637,7 +644,13 @@ const tableAction2 = (row: any) => [
       label: "Delete",
       icon: "i-heroicons-trash-20-solid",
       click: () => {
-        deleteTrainingSet(row);
+        modal.open(FeedDeleteModal, {
+          postData: row,
+          type: 3,
+          onClosed() {
+            modal.close();
+          },
+        });
       },
     },
     {
@@ -660,7 +673,13 @@ const tableAction3 = (row: any) => [
       label: "Delete",
       icon: "i-heroicons-trash-20-solid",
       click: () => {
-        deleteWorkoutMove(row);
+        modal.open(FeedDeleteModal, {
+          postData: row,
+          type: 4,
+          onClosed() {
+            modal.close();
+          },
+        });
       },
     },
     {

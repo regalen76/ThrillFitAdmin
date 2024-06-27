@@ -192,7 +192,7 @@ import {
 import type { Posts, Post } from "~/types";
 import { deleteObject, ref as storageRef } from "firebase/storage";
 import { v4 as uuidV4 } from "uuid";
-import { FeedEditModal } from "#components";
+import { FeedEditModal, FeedDeleteModal } from "#components";
 
 definePageMeta({
   middleware: "auth",
@@ -249,7 +249,13 @@ const tableAction = (row: any) => [
       label: "Delete",
       icon: "i-heroicons-trash-20-solid",
       click: () => {
-        deleteFeeds(row);
+        modal.open(FeedDeleteModal, {
+          postData: row,
+          type: 1,
+          onClosed() {
+            modal.close();
+          },
+        });
       },
     },
     {
