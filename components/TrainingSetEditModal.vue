@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import type { TrainingSet } from "~/types";
+import type { TrainingSet, GoalTypes } from "~/types";
 import type { PropType } from "vue";
 import { object, string, type InferType } from "yup";
 import type { FormSubmitEvent } from "#ui/types";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, query, collection } from "firebase/firestore";
 
 const toast = useToast();
 const db = useFirestore();
@@ -14,11 +14,6 @@ const props = defineProps({
     required: true,
   },
 });
-
-const emit = defineEmits(["success"]);
-function onSuccess() {
-  emit("success");
-}
 
 const schema = object({
   goalTypeId: string().required("Required"),
@@ -57,23 +52,23 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   });
   useLoadingIndicator().finish();
 }
+
+const goalTypesQuery = query(collection(db, "goal_types"));
+const { data: goalTypes, pending } = useCollection<GoalTypes>(goalTypesQuery);
+
+function selectGoalTypeAdd(id: string) {
+  state.goalTypeId = id
+}
 </script>
 
 <template>
   <UModal>
     <UCard>
       <div class="space-y-2">
-        <UForm
-          :schema="schema"
-          :state="state"
-          class="space-y-4"
-          @submit="onSubmit"
-        >
+        <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
           <UCard>
             <template #header>
-              <p
-                class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-              >
+              <p class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                 Data
               </p>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -81,7 +76,31 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </p>
             </template>
 
-            <UFormGroup label="Goal Type Id" name="goalTypeId">
+            <UFormGroup name="goalTypeId">
+              <template #label>
+                <div class="flex">
+                  <span>Goal Type Id</span>
+                  <UPopover class="ml-2" mode="click" :popper="{ placement: 'left' }">
+                    <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer ml-auto"
+                      name="i-heroicons-list-bullet" />
+
+                    <template #panel>
+                      <div class="p-4">
+                        <UProgress v-if="pending === true" animation="carousel" />
+                        <div v-if="pending === false">
+                          <span>Goal Type Name</span>
+                          <div class="bg-white h-1 w-full mt-2 mb-2" />
+                          <div v-for="data in goalTypes">
+                            <div class="hover:text-primary cursor-pointer" @click="selectGoalTypeAdd(data.id)">
+                              <span>{{ data.goal_type_name }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </UPopover>
+                </div>
+              </template>
               <UInput v-model="state.goalTypeId" />
             </UFormGroup>
 

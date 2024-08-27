@@ -58,3 +58,32 @@ export type WorkoutPlanMovesets = {
   view_order: number;
   workout_plan_id: string;
 };
+
+export type UserInfos = {
+  age: string;
+  challenge_wins: number;
+  consecutive_workout: number;
+  email: string;
+  followers: number;
+  gender: string;
+  height: number;
+  name: string;
+  name_search: string[];
+  phone: string;
+  weight: number;
+};
+
+export type UserInfo = {
+  id: string;
+  age: string;
+  challenge_wins: number;
+  consecutive_workout: number;
+  email: string;
+  followers: number;
+  gender: string;
+  height: number;
+  name: string;
+  name_search: string[];
+  phone: string;
+  weight: number;
+};

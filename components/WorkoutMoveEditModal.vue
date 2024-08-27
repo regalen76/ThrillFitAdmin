@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import type { TrainingSetMovement } from "~/types";
+import type { TrainingSetMovement, TrainingSets } from "~/types";
 import type { PropType } from "vue";
 import { object, string, type InferType } from "yup";
 import type { FormSubmitEvent } from "#ui/types";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, query, collection } from "firebase/firestore";
 import { deleteObject, ref as storageRef } from "firebase/storage";
 
 const toast = useToast();
@@ -28,11 +28,6 @@ const items = [
 ];
 const imageName = ref<string>("");
 const movementImage = ref<string>(props.movementData.movement_image);
-
-const emit = defineEmits(["success"]);
-function onSuccess() {
-  emit("success");
-}
 
 const schema = object({
   movementName: string().required("Required"),
@@ -153,6 +148,13 @@ async function deleteImage(path: string) {
     title: "Finished Deleting 3D Model, Next Uploading New 3D Model",
   });
 }
+
+const trainingSetQuery = query(collection(db, "training_sets"));
+const { data: trainingSets, pending } = useCollection<TrainingSets>(trainingSetQuery);
+
+function selectTrainingSetAdd(id: string) {
+  state.trainingSetId = id
+}
 </script>
 
 <template>
@@ -161,17 +163,10 @@ async function deleteImage(path: string) {
       <div class="space-y-2">
         <UTabs :items="items" class="w-full">
           <template #data="{ item }">
-            <UForm
-              :schema="schema"
-              :state="state"
-              class="space-y-4"
-              @submit="onSubmit"
-            >
+            <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
               <UCard>
                 <template #header>
-                  <p
-                    class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-                  >
+                  <p class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                     {{ item.label }}
                   </p>
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -182,7 +177,31 @@ async function deleteImage(path: string) {
                 <UFormGroup label="Movement Name" name="movementName">
                   <UInput v-model="state.movementName" />
                 </UFormGroup>
-                <UFormGroup label="Training Set Id" name="trainingSetId">
+                <UFormGroup name="trainingSetId">
+                  <template #label>
+                    <div class="flex">
+                      <span>Training Set Id</span>
+                      <UPopover class="ml-2" mode="click" :popper="{ placement: 'left' }">
+                        <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer ml-auto"
+                          name="i-heroicons-list-bullet" />
+
+                        <template #panel>
+                          <div class="p-4">
+                            <UProgress v-if="pending === true" animation="carousel" />
+                            <div v-if="pending === false">
+                              <span>Goal Type Name</span>
+                              <div class="bg-white h-1 w-full mt-2 mb-2" />
+                              <div v-for="data in trainingSets">
+                                <div class="hover:text-primary cursor-pointer" @click="selectTrainingSetAdd(data.id)">
+                                  <span>{{ data.training_set_name }}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </template>
+                      </UPopover>
+                    </div>
+                  </template>
                   <UInput v-model="state.trainingSetId" />
                 </UFormGroup>
 
@@ -198,9 +217,7 @@ async function deleteImage(path: string) {
           <template #image="{ item }">
             <UCard>
               <template #header>
-                <p
-                  class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-                >
+                <p class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                   {{ item.label }}
                 </p>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -208,33 +225,19 @@ async function deleteImage(path: string) {
                 </p>
               </template>
 
-              <UFormGroup
-                label="3D Model File Name (if empty, will use file name)"
-                name="imageName"
-              >
+              <UFormGroup label="3D Model File Name (if empty, will use file name)" name="imageName">
                 <UInput v-model="imageName" />
               </UFormGroup>
-              <div
-                class="w-full flex flex-row border-gray-800 border-2 border-solid rounded-lg p-4 items-center mt-4"
-              >
+              <div class="w-full flex flex-row border-gray-800 border-2 border-solid rounded-lg p-4 items-center mt-4">
                 <div>
                   <span> {{ movementImage }} </span>
                 </div>
 
                 <div class="ml-auto">
                   <UTooltip text="Change 3D Model">
-                    <input
-                      ref="imageInput"
-                      type="file"
-                      accept=".glb"
-                      class="hidden"
-                      @change="handleImageInputChange"
-                    />
-                    <UIcon
-                      class="w-8 h-8 hover:text-primary text-gray-300 text-center hover:cursor-pointer ml-auto"
-                      name="i-heroicons-pencil-square-16-solid"
-                      @click="selectImages"
-                    />
+                    <input ref="imageInput" type="file" accept=".glb" class="hidden" @change="handleImageInputChange" />
+                    <UIcon class="w-8 h-8 hover:text-primary text-gray-300 text-center hover:cursor-pointer ml-auto"
+                      name="i-heroicons-pencil-square-16-solid" @click="selectImages" />
                   </UTooltip>
                 </div>
               </div>

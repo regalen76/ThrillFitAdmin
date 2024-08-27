@@ -6,18 +6,10 @@
           <h3>Are you sure you want to delete this data?</h3>
           <div class="flex flex-row mt-4">
             <div class="mr-4 w-20">
-              <UButton v-if="type === 1" block @click="deleteFeeds"
-                >Yes</UButton
-              >
-              <UButton v-if="type === 2" block @click="deleteGoalType"
-                >Yes</UButton
-              >
-              <UButton v-if="type === 3" block @click="deleteTrainingSet"
-                >Yes</UButton
-              >
-              <UButton v-if="type === 4" block @click="deleteWorkoutMove"
-                >Yes</UButton
-              >
+              <UButton v-if="type === 1" block @click="deleteFeeds">Yes</UButton>
+              <UButton v-if="type === 2" block @click="deleteGoalType">Yes</UButton>
+              <UButton v-if="type === 3" block @click="deleteTrainingSet">Yes</UButton>
+              <UButton v-if="type === 4" block @click="deleteWorkoutMove">Yes</UButton>
             </div>
             <div class="w-20">
               <UButton block @click="closeModal">No</UButton>
@@ -37,6 +29,9 @@ import type {
   TrainingSet,
   TrainingSetMovement,
   WorkoutPlanMovesets,
+  TrainingSetMovements,
+  GoalTypes,
+  TrainingSets,
 } from "~/types";
 import type { PropType } from "vue";
 import {
@@ -154,6 +149,7 @@ async function deleteFeeds() {
     return;
   }
   useLoadingIndicator().finish();
+  closeModal()
 }
 
 async function deleteGoalType() {
@@ -191,6 +187,8 @@ async function deleteGoalType() {
   toast.add({
     title: "Finished Deleting " + row.id + " goal type doc",
   });
+
+  deleteTrainingSetList(row.id)
 }
 
 async function deleteTrainingSet() {
@@ -210,6 +208,8 @@ async function deleteTrainingSet() {
   toast.add({
     title: "Finished Deleting " + row.id + " training set",
   });
+
+  deleteWorkoutMoveList(row.id)
 }
 
 async function deleteWorkoutMove() {
@@ -278,6 +278,194 @@ async function deleteWorkoutMove() {
   });
 
   useLoadingIndicator().finish();
+  closeModal()
+}
+
+async function deleteTrainingSetList(goalTypeId: string) {
+  toast.add({
+    title: "Starting delete training set step with delete workout move step",
+  });
+
+  const { promise } = useCollection<TrainingSets>(
+    query(
+      collection(db, "training_sets"),
+      where("goal_type_id", "==", goalTypeId)
+    ),
+    {
+      once: true,
+    }
+  );
+
+  promise.value.then(async (data) => {
+    if (data.length != 0) {
+      for (const ts of data) {
+        try {
+          await deleteDoc(doc(db, "training_sets", ts.id));
+        } catch (e: any) {
+          toast.add({
+            title: "Error deleting training set",
+            description: e.message,
+          });
+          useLoadingIndicator().finish();
+          return;
+        }
+        await deleteWorkoutMoveListAfterTrainingSetList(ts.id)
+      }
+      toast.add({
+        title: "Finished delete training set step with delete workout move step",
+      });
+      useLoadingIndicator().finish()
+      closeModal()
+    } else {
+      useLoadingIndicator().finish()
+      closeModal()
+    }
+  })
+}
+
+async function deleteWorkoutMoveList(trainingSetId: string) {
+  toast.add({
+    title: "Starting delete workout move step",
+  });
+
+  const { promise } = useCollection<TrainingSetMovements>(
+    query(
+      collection(db, "training_set_movements"),
+      where("training_set_id", "==", trainingSetId)
+    ),
+    {
+      once: true,
+    }
+  );
+
+  promise.value.then(async (data) => {
+    if (data.length != 0) {
+      for (const tsm of data) {
+        // delete 3d anim
+        const feedsRef = storageRef(storage, `workout/${tsm.movement_image}`);
+        try {
+          await deleteObject(feedsRef);
+        } catch (e: any) {
+          toast.add({
+            title: `Error deleting 3d file: ${tsm.movement_image}`,
+            description: e.message,
+          });
+          useLoadingIndicator().finish();
+          return;
+        }
+
+        // delete doc
+        try {
+          await deleteDoc(doc(db, "training_set_movements", tsm.id));
+        } catch (e: any) {
+          toast.add({
+            title: "Error deleting workout move doc",
+            description: e.message,
+          });
+          useLoadingIndicator().finish();
+          return;
+        }
+
+        const { promise: promise2 } = useCollection<WorkoutPlanMovesets>(
+          query(
+            collection(db, "workout_plan_movesets"),
+            where("movement_id", "==", tsm.id)
+          ),
+          {
+            once: true,
+          }
+        );
+        promise2.value.then(async (data) => {
+          for (const wpm of data) {
+            try {
+              await deleteDoc(doc(db, "workout_plan_movesets", wpm.id));
+            } catch (e: any) {
+              toast.add({
+                title: "Error deleting workout plan moveset doc",
+                description: e.message,
+              });
+              useLoadingIndicator().finish();
+              return;
+            }
+          }
+        });
+      }
+      useLoadingIndicator().finish();
+    } else {
+      useLoadingIndicator().finish();
+    }
+  })
+  closeModal()
+  toast.add({
+    title: "Finished deleting workout move step",
+  });
+}
+
+async function deleteWorkoutMoveListAfterTrainingSetList(trainingSetId: string) {
+  const { promise } = useCollection<TrainingSetMovements>(
+    query(
+      collection(db, "training_set_movements"),
+      where("training_set_id", "==", trainingSetId)
+    ),
+    {
+      once: true,
+    }
+  );
+
+  promise.value.then(async (data) => {
+    if (data.length != 0) {
+      for (const tsm of data) {
+        // delete 3d anim
+        const feedsRef = storageRef(storage, `workout/${tsm.movement_image}`);
+        try {
+          await deleteObject(feedsRef);
+        } catch (e: any) {
+          toast.add({
+            title: `Error deleting 3d file: ${tsm.movement_image}`,
+            description: e.message,
+          });
+          useLoadingIndicator().finish();
+          return;
+        }
+
+        // delete doc
+        try {
+          await deleteDoc(doc(db, "training_set_movements", tsm.id));
+        } catch (e: any) {
+          toast.add({
+            title: "Error deleting workout move doc",
+            description: e.message,
+          });
+          useLoadingIndicator().finish();
+          return;
+        }
+
+        const { promise: promise2 } = useCollection<WorkoutPlanMovesets>(
+          query(
+            collection(db, "workout_plan_movesets"),
+            where("movement_id", "==", tsm.id)
+          ),
+          {
+            once: true,
+          }
+        );
+        promise2.value.then(async (data) => {
+          for (const wpm of data) {
+            try {
+              await deleteDoc(doc(db, "workout_plan_movesets", wpm.id));
+            } catch (e: any) {
+              toast.add({
+                title: "Error deleting workout plan moveset doc",
+                description: e.message,
+              });
+              useLoadingIndicator().finish();
+              return;
+            }
+          }
+        });
+      }
+    }
+  })
 }
 </script>
 

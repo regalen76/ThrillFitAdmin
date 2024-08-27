@@ -151,6 +151,19 @@ async function deleteImage(path: string) {
     title: "Finished Deleting Image, Next Uploading New Image",
   });
 }
+
+const loadingImage = ref(false);
+const imageDetailEdit = ref("");
+async function loadImage(url: string) {
+  loadingImage.value = true;
+  const imageRef = storageRef(storage, `goal-types/${url}`);
+  const { promise } = useStorageFileUrl(imageRef);
+  const imageUrl = await promise.value;
+  if (imageUrl !== null) {
+    imageDetailEdit.value = imageUrl;
+  }
+  loadingImage.value = false;
+}
 </script>
 
 <template>
@@ -216,7 +229,7 @@ async function deleteImage(path: string) {
                   <span> {{ goalTypeImage }} </span>
                 </div>
 
-                <div class="ml-auto">
+                <div class="ml-auto flex">
                   <UTooltip text="Change Image">
                     <input
                       ref="imageInput"
@@ -231,6 +244,32 @@ async function deleteImage(path: string) {
                       @click="selectImages"
                     />
                   </UTooltip>
+                  <UPopover
+                    class="mr-2 flex items-center"
+                    mode="hover"
+                    :popper="{ placement: 'left' }"
+                    @mouseenter="loadImage(goalTypeImage)"
+                  >
+                    <UIcon
+                      class="w-8 h-8 hover:text-primary text-center hover:cursor-pointer ml-auto"
+                      name="i-heroicons-photo"
+                    />
+
+                    <template #panel>
+                      <div class="p-4">
+                        <UProgress
+                          v-if="loadingImage === true"
+                          animation="carousel"
+                        />
+                        <NuxtImg
+                          v-if="loadingImage === false"
+                          :src="imageDetailEdit"
+                          width="250px"
+                          loading="lazy"
+                        />
+                      </div>
+                    </template>
+                  </UPopover>
                 </div>
               </div>
             </UCard>

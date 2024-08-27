@@ -197,6 +197,19 @@ async function deleteImage(path: string) {
   });
   useLoadingIndicator().finish();
 }
+
+const loadingImage = ref(false);
+const imageDetailEdit = ref("");
+async function loadImage(url: string) {
+  loadingImage.value = true;
+  const imageRef = storageRef(storage, `feeds/${url}`);
+  const { promise } = useStorageFileUrl(imageRef);
+  const imageUrl = await promise.value;
+  if (imageUrl !== null) {
+    imageDetailEdit.value = imageUrl;
+  }
+  loadingImage.value = false;
+}
 </script>
 
 <template>
@@ -264,9 +277,36 @@ async function deleteImage(path: string) {
                   v-for="content in contents"
                   class="w-full flex flex-row border-gray-800 border-2 border-solid rounded-lg p-4 items-center"
                 >
-                  <div>
+                  <div class="mr-2">
                     <span> {{ content }} </span>
                   </div>
+
+                  <UPopover
+                    class="mr-2"
+                    mode="hover"
+                    :popper="{ placement: 'left' }"
+                    @mouseenter="loadImage(content)"
+                  >
+                    <UIcon
+                      class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer ml-auto"
+                      name="i-heroicons-photo"
+                    />
+
+                    <template #panel>
+                      <div class="p-4">
+                        <UProgress
+                          v-if="loadingImage === true"
+                          animation="carousel"
+                        />
+                        <NuxtImg
+                          v-if="loadingImage === false"
+                          :src="imageDetailEdit"
+                          width="250px"
+                          loading="lazy"
+                        />
+                      </div>
+                    </template>
+                  </UPopover>
 
                   <UTooltip text="Delete Image">
                     <UIcon

@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "@vueuse/nuxt", "nuxt-vuefire"],
+  modules: ["@nuxt/ui", "@vueuse/nuxt", "nuxt-vuefire", "@nuxt/image"],
   vuefire: {
     auth: { enabled: true, sessionCookie: true },
     config: {

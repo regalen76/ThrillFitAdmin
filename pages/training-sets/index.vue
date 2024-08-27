@@ -1,25 +1,15 @@
 <template>
   <div ref="contentEl" class="w-full h-full">
     <UTabs :items="tabItems" class="w-full">
-      <template #tablegoaltype="{ item }">
+      <template #tablegoaltype="{}">
         <div class="flex flex-row bg-gray-900 rounded-tl-2xl">
           <div class="flex px-3 py-3.5 dark:border-gray-700">
-            <UInput
-              v-model="goalNameInput"
-              placeholder="Filter goal type name..."
-            />
+            <UInput v-model="goalNameInput" placeholder="Filter goal type name..." />
           </div>
           <div class="flex items-center ml-2">
-            <UPopover
-              class="flex items-center"
-              mode="hover"
-              :popper="{ placement: 'top' }"
-            >
-              <UIcon
-                class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-                name="i-heroicons-document-plus-solid"
-                @click="isOpenCreateDocModal = true"
-              />
+            <UPopover class="flex items-center" mode="hover" :popper="{ placement: 'top' }">
+              <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                name="i-heroicons-document-plus-solid" @click="isOpenCreateDocModal = true" />
 
               <template #panel>
                 <div class="p-4">
@@ -30,26 +20,20 @@
               </template>
             </UPopover>
 
-            <UModal v-model="isOpenCreateDocModal">
+            <UModal v-model="isOpenCreateDocModal" prevent-close>
+              <div class="flex justify-end">
+                <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+                  @click="closeModalDoc1" />
+              </div>
               <div class="p-4">
-                <UForm
-                  :schema="createGoalTypeSchema"
-                  :state="createGoalTypeState"
-                  class="space-y-4"
-                  @submit="onUploadGoalType"
-                >
+                <UForm :schema="createGoalTypeSchema" :state="createGoalTypeState" class="space-y-4"
+                  @submit="onUploadGoalType">
                   <UFormGroup label="Goal Type Name" name="goalTypeName">
                     <UInput v-model="createGoalTypeState.goalTypeName" />
                   </UFormGroup>
                   <UFormGroup label="Goal Type Image" name="goalTypeImage">
-                    <UInput
-                      ref="imageUploadGoalType"
-                      v-model="createGoalTypeState.goalTypeImage"
-                      type="file"
-                      size="md"
-                      icon="i-heroicons-folder"
-                      accept="image/*"
-                    />
+                    <UInput ref="imageUploadGoalType" v-model="createGoalTypeState.goalTypeImage" type="file" size="md"
+                      icon="i-heroicons-folder" accept="image/*" />
                   </UFormGroup>
                   <UFormGroup label="Image Name" name="imageName">
                     <UInput v-model="createGoalTypeState.imageName" />
@@ -59,41 +43,42 @@
                 </UForm>
               </div>
             </UModal>
+
+            <UPopover class="flex items-center ml-2" mode="hover" :popper="{ placement: 'top' }">
+              <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                name="i-heroicons-question-mark-circle" />
+
+              <template #panel>
+                <div class="p-4">
+                  <p class="text-center" style="white-space: initial">
+                    Left click at content to see the entire content
+                  </p>
+                </div>
+              </template>
+            </UPopover>
           </div>
           <div class="flex items-center ml-auto mr-4">
             <p>{{ goalTypes.length }} data</p>
           </div>
         </div>
-        <div
-          v-if="height"
-          class="overflow-auto relative"
-          :style="{ width: width + 'px', height: height - 108 + 'px' }"
-        >
-          <UTable
-            :rows="filteredRows"
-            :loading="pending"
-            :loading-state="{
-              icon: 'i-heroicons-arrow-path-20-solid',
-              label: 'Loading...',
-            }"
-            :progress="{ color: 'primary', animation: 'carousel' }"
-            :empty-state="{
-              icon: 'i-heroicons-circle-stack-20-solid',
-              label: 'No items.',
-            }"
-            :columns="columns"
-            :ui="{
-              wrapper: 'h-full',
-              thead:
-                'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
-              th: {
-                base: 'sticky top-0 m-0',
-              },
-              td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
-            }"
-          >
+        <div v-if="height" class="overflow-auto relative" :style="{ width: width + 'px', height: height - 108 + 'px' }">
+          <UTable :rows="filteredRows" :loading="pending" :loading-state="{
+            icon: 'i-heroicons-arrow-path-20-solid',
+            label: 'Loading...',
+          }" :progress="{ color: 'primary', animation: 'carousel' }" :empty-state="{
+            icon: 'i-heroicons-circle-stack-20-solid',
+            label: 'No items.',
+          }" :columns="columns" :ui="{
+            wrapper: 'h-full',
+            thead:
+              'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
+            th: {
+              base: 'sticky top-0 m-0',
+            },
+            td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
+          }">
             <template #id-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.id }}</span>
 
                 <template #panel>
@@ -106,7 +91,7 @@
               </UPopover>
             </template>
             <template #goal_type_name-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.goal_type_name }}</span>
 
                 <template #panel>
@@ -119,53 +104,31 @@
               </UPopover>
             </template>
             <template #goal_type_image-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
-                <span>{{ row.goal_type_image }}</span>
+              <div class="cursor-pointer" @click="openImageDetailModalGoalTypes(row.goal_type_image)">
+                <span>{{
+                  row.goal_type_image }}</span>
+              </div>
 
-                <template #panel>
-                  <div class="p-4 w-[50rem]">
-                    <p class="text-center" style="white-space: initial">
-                      {{ row.goal_type_image }}
-                    </p>
-                  </div>
-                </template>
-              </UPopover>
             </template>
             <template #actions-data="{ row }">
-              <UDropdown
-                :items="tableAction(row)"
-                :popper="{ placement: 'left' }"
-              >
-                <UIcon
-                  class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-                  name="i-heroicons-ellipsis-horizontal-20-solid"
-                  @click=""
-                />
+              <UDropdown :items="tableAction(row)" :popper="{ placement: 'left' }">
+                <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                  name="i-heroicons-ellipsis-horizontal-20-solid" @click="" />
               </UDropdown>
             </template>
           </UTable>
         </div>
       </template>
 
-      <template #tabletrainingset="{ item }">
+      <template #tabletrainingset="{}">
         <div class="flex flex-row bg-gray-900 rounded-tl-2xl">
           <div class="flex px-3 py-3.5 dark:border-gray-700">
-            <UInput
-              v-model="trainingSetNameInput"
-              placeholder="Filter training set name..."
-            />
+            <UInput v-model="trainingSetNameInput" placeholder="Filter training set name..." />
           </div>
           <div class="flex items-center ml-2">
-            <UPopover
-              class="flex items-center"
-              mode="hover"
-              :popper="{ placement: 'top' }"
-            >
-              <UIcon
-                class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-                name="i-heroicons-document-plus-solid"
-                @click="isOpenCreateDocModal2 = true"
-              />
+            <UPopover class="flex items-center" mode="hover" :popper="{ placement: 'top' }">
+              <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                name="i-heroicons-document-plus-solid" @click="isOpenCreateDocModal2 = true" />
 
               <template #panel>
                 <div class="p-4">
@@ -176,15 +139,40 @@
               </template>
             </UPopover>
 
-            <UModal v-model="isOpenCreateDocModal2">
+            <UModal v-model="isOpenCreateDocModal2" prevent-close>
+              <div class="flex justify-end">
+                <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+                  @click="closeModalDoc2" />
+              </div>
               <div class="p-4">
-                <UForm
-                  :schema="createTrainingSetSchema"
-                  :state="createTrainingSetState"
-                  class="space-y-4"
-                  @submit="onUploadTrainingSet"
-                >
-                  <UFormGroup label="Goal Type Id" name="goalTypeId">
+                <UForm :schema="createTrainingSetSchema" :state="createTrainingSetState" class="space-y-4"
+                  @submit="onUploadTrainingSet">
+                  <UFormGroup name="goalTypeId">
+
+                    <template #label>
+                      <div class="flex">
+                        <span>Goal Type Id</span>
+                        <UPopover class="ml-2" mode="click" :popper="{ placement: 'left' }">
+                          <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer ml-auto"
+                            name="i-heroicons-list-bullet" />
+
+                          <template #panel>
+                            <div class="p-4">
+                              <UProgress v-if="pending === true" animation="carousel" />
+                              <div v-if="pending === false">
+                                <span>Goal Type Name</span>
+                                <div class="bg-white h-1 w-full mt-2 mb-2" />
+                                <div v-for="data in goalTypes">
+                                  <div class="hover:text-primary cursor-pointer" @click="selectGoalTypeAdd(data.id)">
+                                    <span>{{ data.goal_type_name }}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </div>
+                    </template>
                     <UInput v-model="createTrainingSetState.goalTypeId" />
                   </UFormGroup>
                   <UFormGroup label="Training Set Name" name="trainingSetName">
@@ -195,41 +183,42 @@
                 </UForm>
               </div>
             </UModal>
+
+            <UPopover class="flex items-center ml-2" mode="hover" :popper="{ placement: 'top' }">
+              <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                name="i-heroicons-question-mark-circle" />
+
+              <template #panel>
+                <div class="p-4">
+                  <p class="text-center" style="white-space: initial">
+                    Left click at content to see the entire content
+                  </p>
+                </div>
+              </template>
+            </UPopover>
           </div>
           <div class="flex items-center ml-auto mr-4">
             <p>{{ trainingSets.length }} data</p>
           </div>
         </div>
-        <div
-          v-if="height"
-          class="overflow-auto relative"
-          :style="{ width: width + 'px', height: height - 108 + 'px' }"
-        >
-          <UTable
-            :rows="filteredRows2"
-            :loading="pending2"
-            :loading-state="{
-              icon: 'i-heroicons-arrow-path-20-solid',
-              label: 'Loading...',
-            }"
-            :progress="{ color: 'primary', animation: 'carousel' }"
-            :empty-state="{
-              icon: 'i-heroicons-circle-stack-20-solid',
-              label: 'No items.',
-            }"
-            :columns="columns2"
-            :ui="{
-              wrapper: 'h-full',
-              thead:
-                'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
-              th: {
-                base: 'sticky top-0 m-0',
-              },
-              td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
-            }"
-          >
+        <div v-if="height" class="overflow-auto relative" :style="{ width: width + 'px', height: height - 108 + 'px' }">
+          <UTable :rows="filteredRows2" :loading="pending2" :loading-state="{
+            icon: 'i-heroicons-arrow-path-20-solid',
+            label: 'Loading...',
+          }" :progress="{ color: 'primary', animation: 'carousel' }" :empty-state="{
+            icon: 'i-heroicons-circle-stack-20-solid',
+            label: 'No items.',
+          }" :columns="columns2" :ui="{
+            wrapper: 'h-full',
+            thead:
+              'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
+            th: {
+              base: 'sticky top-0 m-0',
+            },
+            td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
+          }">
             <template #id-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.id }}</span>
 
                 <template #panel>
@@ -242,7 +231,7 @@
               </UPopover>
             </template>
             <template #goal_type_id-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.goal_type_id }}</span>
 
                 <template #panel>
@@ -255,7 +244,7 @@
               </UPopover>
             </template>
             <template #training_set_name-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.training_set_name }}</span>
 
                 <template #panel>
@@ -268,40 +257,24 @@
               </UPopover>
             </template>
             <template #actions-data="{ row }">
-              <UDropdown
-                :items="tableAction2(row)"
-                :popper="{ placement: 'left' }"
-              >
-                <UIcon
-                  class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-                  name="i-heroicons-ellipsis-horizontal-20-solid"
-                  @click=""
-                />
+              <UDropdown :items="tableAction2(row)" :popper="{ placement: 'left' }">
+                <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                  name="i-heroicons-ellipsis-horizontal-20-solid" @click="" />
               </UDropdown>
             </template>
           </UTable>
         </div>
       </template>
 
-      <template #tableworkoutmove="{ item }">
+      <template #tableworkoutmove="{}">
         <div class="flex flex-row bg-gray-900 rounded-tl-2xl">
           <div class="flex px-3 py-3.5 dark:border-gray-700">
-            <UInput
-              v-model="movementNameInput"
-              placeholder="Filter movement name..."
-            />
+            <UInput v-model="movementNameInput" placeholder="Filter movement name..." />
           </div>
           <div class="flex items-center ml-2">
-            <UPopover
-              class="flex items-center"
-              mode="hover"
-              :popper="{ placement: 'top' }"
-            >
-              <UIcon
-                class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-                name="i-heroicons-document-plus-solid"
-                @click="isOpenCreateDocModal3 = true"
-              />
+            <UPopover class="flex items-center" mode="hover" :popper="{ placement: 'top' }">
+              <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                name="i-heroicons-document-plus-solid" @click="isOpenCreateDocModal3 = true" />
 
               <template #panel>
                 <div class="p-4">
@@ -312,23 +285,18 @@
               </template>
             </UPopover>
 
-            <UModal v-model="isOpenCreateDocModal3">
+            <UModal v-model="isOpenCreateDocModal3" prevent-close>
+              <div class="flex justify-end">
+                <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+                  @click="closeModalDoc3" />
+              </div>
               <div class="p-4">
-                <UForm
-                  :schema="createWorkoutMoveSchema"
-                  :state="createWorkoutMoveState"
-                  class="space-y-4"
-                  @submit="onUploadWorkoutMove"
-                >
+                <UForm :schema="createWorkoutMoveSchema" :state="createWorkoutMoveState" class="space-y-4"
+                  @submit="onUploadWorkoutMove">
+
                   <UFormGroup label="Movement 3D File" name="movementFile">
-                    <UInput
-                      ref="upload3dWorkoutMove"
-                      v-model="createWorkoutMoveState.file3d"
-                      type="file"
-                      size="md"
-                      icon="i-heroicons-folder"
-                      accept=".glb"
-                    />
+                    <UInput ref="upload3dWorkoutMove" v-model="createWorkoutMoveState.file3d" type="file" size="md"
+                      icon="i-heroicons-folder" accept=".glb" />
                   </UFormGroup>
                   <UFormGroup label="3d File Name" name="file3dName">
                     <UInput v-model="createWorkoutMoveState.file3dName" />
@@ -336,7 +304,33 @@
                   <UFormGroup label="Movement Name" name="movementName">
                     <UInput v-model="createWorkoutMoveState.movementName" />
                   </UFormGroup>
-                  <UFormGroup label="Training Set Id" name="trainingSetId">
+                  <UFormGroup name="trainingSetId">
+                    <template #label>
+                      <div class="flex">
+                        <span>Training Set Id</span>
+                        <UPopover class="ml-2" mode="click" :popper="{ placement: 'left' }">
+                          <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer ml-auto"
+                            name="i-heroicons-list-bullet" />
+
+                          <template #panel>
+                            <div class="p-4">
+                              <UProgress v-if="pending2 === true" animation="carousel" />
+                              <div v-if="pending2 === false">
+                                <span>Training Set Name</span>
+                                <div class="bg-white h-1 w-full mt-2 mb-2" />
+                                <div v-for="data in trainingSets">
+                                  <div class="hover:text-primary cursor-pointer" @click="selectTrainingSetAdd(data.id)">
+                                    <span>{{ data.training_set_name }}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </div>
+                    </template>
+
+
                     <UInput v-model="createWorkoutMoveState.trainingSetId" />
                   </UFormGroup>
 
@@ -344,41 +338,42 @@
                 </UForm>
               </div>
             </UModal>
+
+            <UPopover class="flex items-center ml-2" mode="hover" :popper="{ placement: 'top' }">
+              <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                name="i-heroicons-question-mark-circle" />
+
+              <template #panel>
+                <div class="p-4">
+                  <p class="text-center" style="white-space: initial">
+                    Left click at content to see the entire content
+                  </p>
+                </div>
+              </template>
+            </UPopover>
           </div>
           <div class="flex items-center ml-auto mr-4">
             <p>{{ traningSetMovements.length }} data</p>
           </div>
         </div>
-        <div
-          v-if="height"
-          class="overflow-auto relative"
-          :style="{ width: width + 'px', height: height - 108 + 'px' }"
-        >
-          <UTable
-            :rows="filteredRows3"
-            :loading="pending3"
-            :loading-state="{
-              icon: 'i-heroicons-arrow-path-20-solid',
-              label: 'Loading...',
-            }"
-            :progress="{ color: 'primary', animation: 'carousel' }"
-            :empty-state="{
-              icon: 'i-heroicons-circle-stack-20-solid',
-              label: 'No items.',
-            }"
-            :columns="columns3"
-            :ui="{
-              wrapper: 'h-full',
-              thead:
-                'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
-              th: {
-                base: 'sticky top-0 m-0',
-              },
-              td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
-            }"
-          >
+        <div v-if="height" class="overflow-auto relative" :style="{ width: width + 'px', height: height - 108 + 'px' }">
+          <UTable :rows="filteredRows3" :loading="pending3" :loading-state="{
+            icon: 'i-heroicons-arrow-path-20-solid',
+            label: 'Loading...',
+          }" :progress="{ color: 'primary', animation: 'carousel' }" :empty-state="{
+            icon: 'i-heroicons-circle-stack-20-solid',
+            label: 'No items.',
+          }" :columns="columns3" :ui="{
+            wrapper: 'h-full',
+            thead:
+              'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
+            th: {
+              base: 'sticky top-0 m-0',
+            },
+            td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
+          }">
             <template #id-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.id }}</span>
 
                 <template #panel>
@@ -391,7 +386,7 @@
               </UPopover>
             </template>
             <template #movement_image-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.movement_image }}</span>
 
                 <template #panel>
@@ -404,7 +399,7 @@
               </UPopover>
             </template>
             <template #movement_name-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.movement_name }}</span>
 
                 <template #panel>
@@ -417,7 +412,7 @@
               </UPopover>
             </template>
             <template #training_set_id-data="{ row }">
-              <UPopover mode="hover" :popper="{ placement: 'top' }">
+              <UPopover mode="click" :popper="{ placement: 'top' }">
                 <span>{{ row.training_set_id }}</span>
 
                 <template #panel>
@@ -430,15 +425,9 @@
               </UPopover>
             </template>
             <template #actions-data="{ row }">
-              <UDropdown
-                :items="tableAction3(row)"
-                :popper="{ placement: 'left' }"
-              >
-                <UIcon
-                  class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-                  name="i-heroicons-ellipsis-horizontal-20-solid"
-                  @click=""
-                />
+              <UDropdown :items="tableAction3(row)" :popper="{ placement: 'left' }">
+                <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                  name="i-heroicons-ellipsis-horizontal-20-solid" @click="" />
               </UDropdown>
             </template>
           </UTable>
@@ -455,17 +444,14 @@ import {
   collection,
   query,
   deleteDoc,
-  getDocs,
   where,
   doc,
   setDoc,
-  Timestamp,
 } from "firebase/firestore";
 import type {
   GoalTypes,
   TrainingSetMovements,
   TrainingSets,
-  GoalType,
   TrainingSet,
   TrainingSetMovement,
   WorkoutPlanMovesets,
@@ -477,6 +463,7 @@ import {
   GoalTypeEditModal,
   WorkoutMoveEditModal,
   FeedDeleteModal,
+  ImageDetailModal
 } from "#components";
 
 definePageMeta({
@@ -659,9 +646,6 @@ const tableAction2 = (row: any) => [
       click: () => {
         modal.open(TrainingSetEditModal, {
           trainingSetData: row,
-          onSuccess() {
-            modal.close();
-          },
         });
       },
     },
@@ -688,9 +672,6 @@ const tableAction3 = (row: any) => [
       click: () => {
         modal.open(WorkoutMoveEditModal, {
           movementData: row,
-          onSuccess() {
-            modal.close();
-          },
         });
       },
     },
@@ -754,51 +735,14 @@ async function onUploadGoalType(event: FormSubmitEvent<CreateGoalTypeSchema>) {
   toast.add({
     title: "Finished Creating Goal Type",
   });
+
+  imageUploadGoalType.value.input.files = new DataTransfer().files
+  createGoalTypeState.goalTypeImage = undefined
+  createGoalTypeState.goalTypeName = undefined
+  createGoalTypeState.imageName = undefined
+
   isOpenCreateDocModal.value = false;
   useLoadingIndicator().finish();
-}
-
-async function deleteGoalType(row: GoalType) {
-  useLoadingIndicator().start();
-  //delete the images
-  toast.add({
-    title: "Deleting Image",
-  });
-  const feedsRef = storageRef(storage, `goal-types/${row.goal_type_image}`);
-  try {
-    await deleteObject(feedsRef);
-  } catch (e: any) {
-    toast.add({
-      title: `Error deleting image: ${row.goal_type_image}`,
-      description: e.message,
-    });
-    useLoadingIndicator().finish();
-    return;
-  }
-  toast.add({
-    title: "Finished Deleting Image, Next Deleting Goal Type Doc",
-  });
-
-  try {
-    await deleteDoc(doc(db, "goal_types", row.id));
-  } catch (e: any) {
-    toast.add({
-      title: "Error deleting goal type doc",
-      description: e.message,
-    });
-    useLoadingIndicator().finish();
-    return;
-  }
-  toast.add({
-    title: "Finished Deleting " + row.id + " goal type doc",
-  });
-
-  const temp: TrainingSet[] = trainingSets.value.filter(
-    (trainingSet) => (trainingSet.goal_type_id = row.id)
-  );
-  if (temp.length !== 0) {
-    deleteTrainingSetList(temp);
-  }
 }
 
 const createTrainingSetSchema = object().shape({
@@ -807,8 +751,8 @@ const createTrainingSetSchema = object().shape({
 });
 type CreateTrainingSetSchema = InferType<typeof createTrainingSetSchema>;
 const createTrainingSetState = reactive({
-  goalTypeId: undefined,
-  trainingSetName: undefined,
+  goalTypeId: "",
+  trainingSetName: "",
 });
 async function onUploadTrainingSet(
   event: FormSubmitEvent<CreateTrainingSetSchema>
@@ -835,33 +779,11 @@ async function onUploadTrainingSet(
   toast.add({
     title: "Finished Creating Training Set",
   });
+
+  createTrainingSetState.goalTypeId = ""
+  createTrainingSetState.trainingSetName = ""
   isOpenCreateDocModal2.value = false;
   useLoadingIndicator().finish();
-}
-
-async function deleteTrainingSet(row: TrainingSet) {
-  useLoadingIndicator().start();
-
-  try {
-    await deleteDoc(doc(db, "training_sets", row.id));
-  } catch (e: any) {
-    toast.add({
-      title: "Error deleting training set",
-      description: e.message,
-    });
-    useLoadingIndicator().finish();
-    return;
-  }
-  toast.add({
-    title: "Finished Deleting " + row.id + " training set",
-  });
-
-  const temp: TrainingSetMovement[] = traningSetMovements.value.filter(
-    (trainingSetMovement) => (trainingSetMovement.training_set_id = row.id)
-  );
-  if (temp.length !== 0) {
-    deleteWorkoutMoveList(temp);
-  }
 }
 
 async function deleteTrainingSetList(row: TrainingSet[]) {
@@ -906,7 +828,7 @@ const createWorkoutMoveState = reactive({
   file3d: undefined,
   file3dName: undefined,
   movementName: undefined,
-  trainingSetId: undefined,
+  trainingSetId: "",
 });
 
 async function onUploadWorkoutMove(
@@ -957,6 +879,13 @@ async function onUploadWorkoutMove(
   toast.add({
     title: "Finished Creating Workout Move",
   });
+
+  upload3dWorkoutMove.value.input.files = new DataTransfer().files
+  createWorkoutMoveState.file3dName = undefined
+  createWorkoutMoveState.file3d = undefined
+  createWorkoutMoveState.movementName = undefined
+  createWorkoutMoveState.trainingSetId = ""
+
   isOpenCreateDocModal3.value = false;
   useLoadingIndicator().finish();
 }
@@ -1105,6 +1034,40 @@ async function deleteWorkoutMoveList(row: TrainingSetMovement[]) {
   }
 
   useLoadingIndicator().finish();
+}
+
+function openImageDetailModalGoalTypes(content: string) {
+  modal.open(ImageDetailModal, {
+    images: [content],
+    location: "goal-types",
+    onSuccess() {
+      modal.close();
+    },
+  });
+}
+
+function selectGoalTypeAdd(id: string) {
+  createTrainingSetState.goalTypeId = id
+}
+
+function selectTrainingSetAdd(id: string) {
+  createWorkoutMoveState.trainingSetId = id
+}
+
+function closeModalDoc1() {
+  imageUploadGoalType.value.input.files = new DataTransfer().files
+  createGoalTypeState.goalTypeImage = undefined
+  isOpenCreateDocModal.value = false
+}
+
+function closeModalDoc2() {
+  isOpenCreateDocModal2.value = false
+}
+
+function closeModalDoc3() {
+  upload3dWorkoutMove.value.input.files = new DataTransfer().files
+  createWorkoutMoveState.file3d = undefined
+  isOpenCreateDocModal3.value = false
 }
 </script>
 

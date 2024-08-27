@@ -5,16 +5,9 @@
         <UInput v-model="authorInput" placeholder="Filter author..." />
       </div>
       <div class="flex items-center ml-2">
-        <UPopover
-          class="flex items-center"
-          mode="hover"
-          :popper="{ placement: 'top' }"
-        >
-          <UIcon
-            class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-            name="i-heroicons-document-plus-solid"
-            @click="isOpenCreateDocModal = true"
-          />
+        <UPopover class="flex items-center" mode="hover" :popper="{ placement: 'top' }">
+          <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+            name="i-heroicons-document-plus-solid" @click="isOpenCreateDocModal = true" />
 
           <template #panel>
             <div class="p-4">
@@ -26,23 +19,15 @@
         </UPopover>
 
         <UModal v-model="isOpenCreateDocModal">
+          <div class="flex justify-end">
+            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+              @click="closeModalDoc1" />
+          </div>
           <div class="p-4">
-            <UForm
-              :schema="createPostSchema"
-              :state="createPostState"
-              class="space-y-4"
-              @submit="onUploadPost"
-            >
+            <UForm :schema="createPostSchema" :state="createPostState" class="space-y-4" @submit="onUploadPost">
               <UFormGroup label="Image Post" name="imageFile">
-                <UInput
-                  ref="imageUpload"
-                  v-model="createPostState.imageFile"
-                  type="file"
-                  size="md"
-                  icon="i-heroicons-folder"
-                  multiple
-                  accept="image/*"
-                />
+                <UInput ref="imageUpload" v-model="createPostState.imageFile" type="file" size="md"
+                  icon="i-heroicons-folder" multiple accept="image/*" />
               </UFormGroup>
               <UFormGroup label="Post Body" name="body">
                 <UInput v-model="createPostState.body" />
@@ -52,40 +37,41 @@
             </UForm>
           </div>
         </UModal>
+
+        <UPopover class="flex items-center ml-2" mode="hover" :popper="{ placement: 'top' }">
+          <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+            name="i-heroicons-question-mark-circle" />
+
+          <template #panel>
+            <div class="p-4">
+              <p class="text-center" style="white-space: initial">
+                Left click at content to see the entire content
+              </p>
+            </div>
+          </template>
+        </UPopover>
       </div>
       <div class="flex items-center ml-auto mr-4">
         <p>{{ feeds.length }} data</p>
       </div>
     </div>
-    <div
-      v-if="height"
-      class="overflow-auto relative"
-      :style="{ width: width + 'px', height: height - 60 + 'px' }"
-    >
-      <UTable
-        :rows="filteredRows"
-        :loading="pending"
-        :loading-state="{
-          icon: 'i-heroicons-arrow-path-20-solid',
-          label: 'Loading...',
-        }"
-        :progress="{ color: 'primary', animation: 'carousel' }"
-        :empty-state="{
-          icon: 'i-heroicons-circle-stack-20-solid',
-          label: 'No items.',
-        }"
-        :columns="columns"
-        :ui="{
-          wrapper: 'h-full',
-          thead: 'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
-          th: {
-            base: 'sticky top-0 m-0',
-          },
-          td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
-        }"
-      >
+    <div v-if="height" class="overflow-auto relative" :style="{ width: width + 'px', height: height - 60 + 'px' }">
+      <UTable :rows="filteredRows" :loading="pending" :loading-state="{
+        icon: 'i-heroicons-arrow-path-20-solid',
+        label: 'Loading...',
+      }" :progress="{ color: 'primary', animation: 'carousel' }" :empty-state="{
+        icon: 'i-heroicons-circle-stack-20-solid',
+        label: 'No items.',
+      }" :columns="columns" :ui="{
+        wrapper: 'h-full',
+        thead: 'sticky top-0 z-10 bg-gray-900 border-t-[1px] border-gray-400',
+        th: {
+          base: 'sticky top-0 m-0',
+        },
+        td: { base: 'max-w-[10rem] truncate border-b-2 border-gray-400' },
+      }">
         <template #timestamp-data="{ row }">
-          <UPopover mode="hover" :popper="{ placement: 'top' }">
+          <UPopover mode="click" :popper="{ placement: 'top' }">
             <span>{{ row.timestamp.toDate() }}</span>
 
             <template #panel>
@@ -98,33 +84,29 @@
           </UPopover>
         </template>
         <template #author-data="{ row }">
-          <UPopover mode="hover" :popper="{ placement: 'top' }">
+          <UPopover mode="click" :popper="{ placement: 'top' }">
             <span>{{ row.author }}</span>
 
             <template #panel>
-              <div class="p-4 w-[50rem]">
+              <div class="p-4 w-[50rem] flex justify-center">
                 <p class="text-center" style="white-space: initial">
                   {{ row.author }}
                 </p>
+                <UIcon class="ml-4 w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+                  name="i-heroicons-information-circle" @click="openUserDetailModal(row.author)" />
               </div>
             </template>
           </UPopover>
         </template>
         <template #content-data="{ row }">
-          <UPopover mode="hover" :popper="{ placement: 'top' }">
-            <span>{{ row.content }}</span>
+          <div class="cursor-pointer" @click="openImageDetailModal(row.content)">
+            <span>{{
+              row.content }}</span>
+          </div>
 
-            <template #panel>
-              <div class="p-4 w-[50rem]">
-                <p class="text-center" style="white-space: initial">
-                  {{ row.content }}
-                </p>
-              </div>
-            </template>
-          </UPopover>
         </template>
         <template #body-data="{ row }">
-          <UPopover mode="hover" :popper="{ placement: 'top' }">
+          <UPopover mode="click" :popper="{ placement: 'top' }">
             <span>{{ row.body }}</span>
 
             <template #panel>
@@ -137,7 +119,7 @@
           </UPopover>
         </template>
         <template #workout_plan-data="{ row }">
-          <UPopover mode="hover" :popper="{ placement: 'top' }">
+          <UPopover mode="click" :popper="{ placement: 'top' }">
             <span>{{ row.workout_plan }}</span>
 
             <template #panel>
@@ -150,7 +132,7 @@
           </UPopover>
         </template>
         <template #id-data="{ row }">
-          <UPopover mode="hover" :popper="{ placement: 'top' }">
+          <UPopover mode="click" :popper="{ placement: 'top' }">
             <span>{{ row.id }}</span>
 
             <template #panel>
@@ -164,11 +146,8 @@
         </template>
         <template #actions-data="{ row }">
           <UDropdown :items="tableAction(row)" :popper="{ placement: 'left' }">
-            <UIcon
-              class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
-              name="i-heroicons-ellipsis-horizontal-20-solid"
-              @click=""
-            />
+            <UIcon class="w-6 h-6 hover:text-primary text-center hover:cursor-pointer"
+              name="i-heroicons-ellipsis-horizontal-20-solid" @click="" />
           </UDropdown>
         </template>
       </UTable>
@@ -192,7 +171,12 @@ import {
 import type { Posts, Post } from "~/types";
 import { deleteObject, ref as storageRef } from "firebase/storage";
 import { v4 as uuidV4 } from "uuid";
-import { FeedEditModal, FeedDeleteModal } from "#components";
+import {
+  FeedEditModal,
+  FeedDeleteModal,
+  ImageDetailModal,
+  UserDetailModal,
+} from "#components";
 
 definePageMeta({
   middleware: "auth",
@@ -413,7 +397,12 @@ async function onUploadPost(event: FormSubmitEvent<CreatePostSchema>) {
   toast.add({
     title: "Finished Creating Post Data",
   });
-  isOpenCreateDocModal.value = false;
+
+  imageUpload.value.input.files = new DataTransfer().files
+  createPostState.imageFile = undefined
+  createPostState.body = undefined
+
+  isOpenCreateDocModal.value = false
   useLoadingIndicator().finish();
 }
 
@@ -433,6 +422,31 @@ function openEditModal(postData: Post) {
       modal.close();
     },
   });
+}
+
+function openImageDetailModal(content: string[]) {
+  modal.open(ImageDetailModal, {
+    images: content,
+    location: "feeds",
+    onSuccess() {
+      modal.close();
+    },
+  });
+}
+
+function openUserDetailModal(uid: string) {
+  modal.open(UserDetailModal, {
+    uid: uid,
+    onSuccess() {
+      modal.close();
+    },
+  });
+}
+
+function closeModalDoc1() {
+  imageUpload.value.input.files = new DataTransfer().files
+  createPostState.imageFile = undefined
+  isOpenCreateDocModal.value = false
 }
 </script>
 
